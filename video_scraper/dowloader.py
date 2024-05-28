@@ -70,13 +70,16 @@ def download_pitcher_videos(game_pk, pitcher_name, video_folder, team_id):
                     # Write the row to the CSV file
                     writer.writerow([filename, f"{pitcher_name} vs. {batter_name} {pitch_name} {rounded_speed} mph {call_name} #shorts"])
 
+                    call_type = 'strike' if 'strike' in call_name.lower() else 'ball'
                     # Download the video
-                    landscape_output_directory = os.path.join(video_folder, f"{game_pk}/landscape")
+                    #landscape_output_directory = os.path.join(video_folder, f"{game_pk}/landscape")
+                    landscape_output_directory = os.path.join(video_folder, f"{game_pk}/landscape/{call_type}/{pitch_name}")
+
                     os.makedirs(landscape_output_directory, exist_ok=True)
                     urllib.request.urlretrieve(src, f"{landscape_output_directory}/{filename}")
                     counter += 1
 
-                    portrait_output_directory = os.path.join(video_folder, f"{game_pk}/portrait")
+                    portrait_output_directory = os.path.join(video_folder, f"{game_pk}/portrait/{call_type}/{pitch_name}")
                     os.makedirs(portrait_output_directory, exist_ok=True)
                     convert_to_nine_sixteen_aspect_ratio(f"{landscape_output_directory}/{filename}", portrait_output_directory)
 
