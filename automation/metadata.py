@@ -18,6 +18,7 @@ class Metadata:
 
 
 _MAX_TITLE_LEN = 100  # YouTube hard cap
+_SITE_URL = "https://mlbsims.com"
 
 
 def _truncate(s: str, n: int) -> str:
@@ -37,9 +38,8 @@ def for_long(pitcher_name: str, run_date: str, clips: list[ClipRecord]) -> Metad
         "",
         f"Pitches: {pitch_summary}",
         f"Opponents: {', '.join(teams_faced)}" if teams_faced else "",
-        f"Total clips: {len(clips)}",
         "",
-        "Auto-generated.",
+        f"visit: {_SITE_URL}",
     ]
     description = "\n".join(line for line in description_lines if line is not None)
     tags = list({pitcher_name, "MLB", "baseball", "pitching", *pitch_counts.keys(), *teams_faced})
@@ -59,6 +59,8 @@ def for_short(
         f"{pitcher_name} {pitch_name.lower()}s from {run_date}.",
         f"Clips: {len(clips)}",
         speed_range,
+        "",
+        f"visit: {_SITE_URL}",
         "",
         "#shorts #mlb #baseball",
     ]
