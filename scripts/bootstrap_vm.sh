@@ -22,6 +22,17 @@ sudo apt-get install -y --no-install-recommends \
 echo "==> timezone -> $TIMEZONE"
 sudo timedatectl set-timezone "$TIMEZONE"
 
+# e2-micro has only 1 GB RAM. pip install with pandas/scipy/numpy/opencv-python
+# OOMs or thrashes without swap. 2 GB swapfile is enough headroom.
+if ! sudo swapon --show | grep -q '/swapfile'; then
+    echo "==> creating 2GB swapfile"
+    sudo fallocate -l 2G /swapfile
+    sudo chmod 600 /swapfile
+    sudo mkswap /swapfile
+    sudo swapon /swapfile
+    echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab > /dev/null
+fi
+
 if [ ! -d "$REPO_DIR/.git" ]; then
     echo "==> cloning repo"
     git clone "$REPO_URL" "$REPO_DIR"
