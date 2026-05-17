@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}MLB Sims{% endblock %}</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a class="brand" href="/">MLB Sims</a>
+    <nav>
+      <a href="/" class="{% if nav == 'today' %}active{% endif %}">Today</a>
+      <a href="/results/" class="{% if nav == 'results' %}active{% endif %}">Results</a>
+      <a href="/methodology" class="{% if nav == 'methodology' %}active{% endif %}">Methodology</a>
+    </nav>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <footer>
+    Updated {{ generated_at }} · <a href="/methodology">how these numbers are made</a>
+  </footer>
+</body>
+</html>

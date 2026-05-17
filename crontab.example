@@ -13,3 +13,19 @@
 
 # Concrete example (edit and uncomment):
 # 0 9 * * * cd /Users/silverboi/Documents/GitHub/ultra-secret-automation-project && /Users/silverboi/Documents/GitHub/ultra-secret-automation-project/.venv/bin/python daily_run.py >> logs/cron.log 2>&1
+
+# --- MLB Sims static site (separate job) ---
+# Runs at 9am ET each day:
+#   1. Pull all completed games through last night
+#   2. Re-compute team strengths
+#   3. Simulate today's slate
+#   4. Re-render the static site
+#   5. Push rendered HTML to the public mlb-sims-site repo (Cloudflare Pages auto-deploys on push)
+#
+# Use `&&` so deploy only runs when the pipeline exits 0.
+# Override SIM_SITE_REPO if your public site checkout is not at ~/mlb-sims-site.
+
+0 9 * * * cd REPO && (PYBIN -m sim_site.daily_run && bash sim_site/deploy.sh) >> logs/sim_site_cron.log 2>&1
+
+# Concrete example (edit and uncomment):
+# 0 9 * * * cd /Users/silverboi/Documents/GitHub/ultra-secret-automation-project && (/Users/silverboi/Documents/GitHub/ultra-secret-automation-project/.venv/bin/python -m sim_site.daily_run && bash sim_site/deploy.sh) >> logs/sim_site_cron.log 2>&1

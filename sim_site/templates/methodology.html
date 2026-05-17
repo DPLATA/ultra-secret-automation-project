@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Methodology · MLB Sims{% endblock %}
+{% block content %}
+<h1>How these numbers are made</h1>
+<p class="subtitle">A walk through the model, in plain English.</p>
+
+<h2>The idea</h2>
+<p>
+  Runs per game in baseball happen to follow a <strong>Poisson distribution</strong> quite well —
+  many independent chances to score, each with a small probability of succeeding. That means if
+  we can estimate the average number of runs a team is expected to score in a given matchup
+  (we call this number <em>λ</em>, lambda), we can sample plausible final scores by drawing
+  Poisson random numbers, then run that thousands of times to build a picture of how the
+  game could go.
+</p>
+<p>
+  The methodology here is adapted from a soccer model popularized in David Sumpter's
+  <em>Soccermatics</em>. Baseball actually fits Poisson better than soccer goals do.
+</p>
+
+<h2>Step by step</h2>
+<ol>
+  <li><strong>Pull every completed regular-season game this season</strong> from the official MLB Stats API.</li>
+  <li>
+    <strong>For each team, compute four splits:</strong> average runs scored at home, average runs scored
+    on the road, average runs allowed at home, average runs allowed on the road.
+  </li>
+  <li>
+    <strong>Park-adjust the home numbers.</strong> Some venues naturally inflate offense
+    (Coors Field, Fenway, Great American) while others suppress it (Oracle Park, T-Mobile, Petco).
+    We divide each team's home stats by their ballpark's 3-year run factor so we're comparing
+    apples to apples across the league.
+  </li>
+  <li>
+    <strong>Compute four strength ratios per team</strong>, expressed relative to the park-neutral
+    league averages: home attack, away attack, home defense, away defense. A value of 1.20 means
+    the team is 20% above league average in that split; 0.80 means 20% below.
+  </li>
+  <li>
+    <strong>For an upcoming game</strong>, multiply the relevant strengths together with the league
+    average, then re-apply the home venue's park factor. That produces an expected-runs (λ) value
+    for each team.
+  </li>
+  <li>
+    <strong>Sample 10,000 Poisson draws</strong> for each team's run total. Count how often each side
+    wins, the most likely final scores, the distribution of run totals, over/under at common lines.
+  </li>
+</ol>
+
+<h2>What this model doesn't know</h2>
+<p>This is a baseline. It explicitly does <em>not</em> use:</p>
+<ul>
+  <li><strong>Starting pitcher identity</strong> — a Cy Young vs. a spot starter looks the same to it. A separate pitcher model is coming.</li>
+  <li><strong>Lineup composition</strong> — no platoon splits, no rest days for stars.</li>
+  <li><strong>Recent form</strong> — a team in a 7-game winning streak looks identical to its season-to-date stats.</li>
+  <li><strong>Weather</strong> — wind at Wrigley or rain at Citi Field can shift expected runs meaningfully.</li>
+  <li><strong>Bullpen quality</strong> — late-inning leverage is missed entirely.</li>
+  <li><strong>Injuries</strong> — if a team's best hitter just went on the IL, the model doesn't know yet.</li>
+</ul>
+
+<h2>Why the site is hidden before May</h2>
+<p>
+  Early in the season, sample sizes are tiny. One bad week of weather or a few extreme blowouts
+  can dominate a team's apparent ability. We wait until enough games are played that the
+  numbers start to mean something — early May, roughly 30+ games per team.
+</p>
+
+<h2>How "win probability" relates to "extras needed"</h2>
+<p>
+  The Poisson model returns three outcomes per simulated game: home wins in regulation, away
+  wins in regulation, or tied at the end of 9 innings ("extras needed"). Real MLB games can't
+  end tied, but Poisson doesn't know about innings — so we report the regulation-tie share
+  separately rather than splitting it 50/50.
+</p>
+
+<h2>Source &amp; transparency</h2>
+<p>
+  All data comes from the official <a href="https://statsapi.mlb.com">MLB Stats API</a>.
+  Underlying methodology inspired by <em>Soccermatics</em> (David Sumpter) and the
+  <a href="https://www.youtube.com/watch?v=buUlf_JWQGM">Numberphile</a> Poisson football simulation.
+  Pipeline rebuilds daily after games complete.
+</p>
+{% endblock %}

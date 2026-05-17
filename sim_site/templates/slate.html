@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ slate_date }} predictions · MLB Sims{% endblock %}
+{% block content %}
+<h1>{{ slate_date_long }}</h1>
+<p class="subtitle">{{ games|length }} game{{ '' if games|length == 1 else 's' }} on the slate. Click a row for the full distribution.</p>
+
+{% if games %}
+<table>
+  <thead>
+    <tr>
+      <th>Matchup</th>
+      <th class="num">Win prob</th>
+      <th class="num">E[runs]</th>
+      <th class="num">Total</th>
+      <th class="num">P(over 8.5)</th>
+      <th>Likely score</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for g in games %}
+    <tr class="game-link" onclick="window.location='/games/{{ slate_date }}/{{ g.away.abbr }}-at-{{ g.home.abbr }}'">
+      <td><strong>{{ g.away.abbr }}</strong> @ <strong>{{ g.home.abbr }}</strong></td>
+      <td class="num">
+        {% if g.win_probability.home > g.win_probability.away %}
+          {{ g.home.abbr }} {{ "%.0f"|format(g.win_probability.home * 100) }}%
+        {% else %}
+          {{ g.away.abbr }} {{ "%.0f"|format(g.win_probability.away * 100) }}%
+        {% endif %}
+      </td>
+      <td class="num">{{ "%.1f"|format(g.expected.away_runs) }} – {{ "%.1f"|format(g.expected.home_runs) }}</td>
+      <td class="num">{{ "%.1f"|format(g.expected.total_runs) }}</td>
+      <td class="num">{{ "%.0f"|format(g.over_under["8.5"].over * 100) }}%</td>
+      <td>{{ g.most_likely_scores[0].away }}–{{ g.most_likely_scores[0].home }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No games scheduled.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Results · {{ result_date }} · MLB Sims{% endblock %}
+{% block content %}
+<h1>Results · {{ result_date_long }}</h1>
+<p class="subtitle">{{ games|length }} completed game{{ '' if games|length == 1 else 's' }}.</p>
+
+{% if recent_dates %}
+<p class="meta">
+  Other dates:
+  {% for d in recent_dates %}
+    <a href="/results/{{ d }}/">{{ d }}</a>{{ ", " if not loop.last else "" }}
+  {% endfor %}
+</p>
+{% endif %}
+
+{% if games %}
+<table>
+  <thead>
+    <tr>
+      <th>Matchup</th>
+      <th class="num">Away</th>
+      <th class="num">Home</th>
+      <th>Winner</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for g in games %}
+    <tr>
+      <td><strong>{{ g.away_abbr }}</strong> @ <strong>{{ g.home_abbr }}</strong></td>
+      <td class="num">{{ g.away_runs }}</td>
+      <td class="num">{{ g.home_runs }}</td>
+      <td>
+        {% if g.home_runs > g.away_runs %}{{ g.home_abbr }}
+        {% elif g.away_runs > g.home_runs %}{{ g.away_abbr }}
+        {% else %}—{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No completed games on this date.</p>
+{% endif %}
+{% endblock %}

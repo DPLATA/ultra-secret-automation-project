@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}{{ g.away.abbr }} @ {{ g.home.abbr }} · {{ g.date }} · MLB Sims{% endblock %}
+{% block content %}
+<div class="matchup-header">
+  <h1>{{ g.away.name }} <span class="vs">@</span> {{ g.home.name }}</h1>
+  <span class="pill">{{ g.date }}</span>
+</div>
+<p class="meta">
+  {{ g.venue }} · park factor {{ "%.2f"|format(g.venue_park_factor) }}
+  {% if g.game_time_utc %}· first pitch {{ g.game_time_utc }}{% endif %}
+</p>
+
+<h2>Win probability</h2>
+<div class="winprob">
+  <div class="row">
+    <span class="label">{{ g.away.abbr }}</span>
+    <div class="bar"><div class="fill away" style="width: {{ g.win_probability.away * 100 }}%"></div></div>
+    <span class="pct">{{ "%.1f"|format(g.win_probability.away * 100) }}%</span>
+  </div>
+  <div class="row">
+    <span class="label">{{ g.home.abbr }}</span>
+    <div class="bar"><div class="fill home" style="width: {{ g.win_probability.home * 100 }}%"></div></div>
+    <span class="pct">{{ "%.1f"|format(g.win_probability.home * 100) }}%</span>
+  </div>
+  <div class="row">
+    <span class="label">Extras needed</span>
+    <div class="bar"><div class="fill extras" style="width: {{ g.win_probability.extras * 100 }}%"></div></div>
+    <span class="pct">{{ "%.1f"|format(g.win_probability.extras * 100) }}%</span>
+  </div>
+</div>
+
+<h2>Expected runs</h2>
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-label">{{ g.away.abbr }} expected</div>
+    <div class="stat-value">{{ "%.2f"|format(g.expected.away_runs) }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">{{ g.home.abbr }} expected</div>
+    <div class="stat-value">{{ "%.2f"|format(g.expected.home_runs) }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Total expected</div>
+    <div class="stat-value">{{ "%.2f"|format(g.expected.total_runs) }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Total — 10/median/90</div>
+    <div class="stat-value">{{ g.totals.p10|int }} / {{ g.totals.median|int }} / {{ g.totals.p90|int }}</div>
+  </div>
+</div>
+
+<h2>Most likely final scores</h2>
+<table>
+  <thead><tr><th>Score ({{ g.away.abbr }}–{{ g.home.abbr }})</th><th class="num">Probability</th></tr></thead>
+  <tbody>
+    {% for s in g.most_likely_scores %}
+    <tr><td>{{ s.away }} – {{ s.home }}</td><td class="num">{{ "%.2f"|format(s.probability * 100) }}%</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>Over / under</h2>
+<table>
+  <thead><tr><th>Line</th><th class="num">Over</th><th class="num">Under</th></tr></thead>
+  <tbody>
+    {% for line, ou in g.over_under|dictsort %}
+    <tr>
+      <td>{{ line }}</td>
+      <td class="num">{{ "%.1f"|format(ou.over * 100) }}%</td>
+      <td class="num">{{ "%.1f"|format(ou.under * 100) }}%</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="callout">
+  These numbers come from {{ "{:,}".format(g.n_simulations) }} Poisson simulations using season-to-date team strengths.
+  No starting pitcher, lineup, or weather adjustment is applied (yet).
+  <a href="/methodology">Full methodology →</a>
+</div>
+{% endblock %}

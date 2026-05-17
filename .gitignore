@@ -10,3 +10,7 @@ __pycache__/
 .venv
 venv
 secrets/
+
+# sim_site build artifacts
+sim_site/site/
+sim_site/data/
