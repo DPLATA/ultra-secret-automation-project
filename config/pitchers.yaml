@@ -1,0 +1,55 @@
+# Pitchers to process on every daily run.
+#
+# Each entry needs:
+#   name: full player name as it appears on Baseball Savant
+#   team: team Brief Name from constants.MLB_TEAMS_INFO (e.g. Cubs, Yankees, Padres)
+#
+# Optional knobs (sensible defaults applied if omitted):
+#   lookback_days:        how many days back to scan for new games (default 7)
+#   long_min_clips:       minimum clip count to build the long horizontal video (default 5)
+#   short_min_clips:      minimum clips of one pitch type to build a vertical Short (default 3)
+#   strikes_only_shorts:  if true, vertical Shorts only include strikes (default true)
+
+defaults:
+  lookback_days: 7
+  long_min_clips: 5
+  short_min_clips: 3
+  short_max_clips: 6   # hard cap so the Short stays under YouTube's 60s rule
+  strikes_only_shorts: true
+
+# YouTube upload settings.
+# Default project quota = 10,000 units/day; each upload = 1,600 units.
+# 6 uploads/day max until you request a quota increase.
+youtube:
+  max_uploads_per_day: 6
+  max_longs_per_day: 3
+  max_shorts_per_day: 3
+  default_privacy: private  # API-locked to private until your project is audited
+
+pitchers:
+  - name: Paul Skenes
+    team: Pirates
+  - name: Dylan Cease
+    team: Blue Jays
+  - name: Tarik Skubal
+    team: Tigers
+  - name: Zack Wheeler
+    team: Phillies
+  - name: Logan Webb
+    team: Giants
+  - name: Garrett Crochet
+    team: Red Sox
+  # - name: Javier Assad
+  #   team: Cubs
+  # - name: Yu Darvish
+  #   team: Padres
+  #   long_min_clips: 8
+  #   strikes_only_shorts: false
+
+# Where the pipeline writes things. All paths are relative to repo root.
+paths:
+  videos_dir: videos
+  compilations_dir: compilations
+  manifest_dir: compilations/manifests
+  state_db: state.db
+  logs_dir: logs

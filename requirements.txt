@@ -1,4 +1,9 @@
 attrs==23.2.0
+google-api-python-client==2.155.0
+google-auth-oauthlib==1.2.1
+google-auth-httplib2==0.2.0
+opencv-python==4.10.0.84
+PyYAML==6.0.2
 beautifulsoup4==4.12.3
 certifi==2024.2.2
 cffi==1.16.0

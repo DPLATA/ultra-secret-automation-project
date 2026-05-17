@@ -1,55 +1,25 @@
-"""
-Author: silverboy
+"""Extract the source URL of a Baseball Savant sporty-videos clip."""
 
-This script provides a function to extract the source URL of a video_scraper from a given web page URL.
-It uses the requests library to fetch the HTML content from the URL and BeautifulSoup for HTML parsing.
-"""
+import logging
+from typing import Optional
 
 import requests
 from bs4 import BeautifulSoup
 
-def get_video_src_from_url(url):
-    """
-    Extracts the source URL of a video_scraper from a given web page URL.
+log = logging.getLogger(__name__)
 
-    Parameters:
-    url (str): The URL of the web page containing the video_scraper.
 
-    Returns:
-    str: The source URL of the video_scraper if found, or an error message if the video_scraper source cannot be retrieved.
-    """
-    try:
-        # Send an HTTP GET request to the provided URL
-        response = requests.get(url)
-
-        # Check if the request was successful (status code 200)
-        if response.status_code == 200:
-            # Get the HTML content from the response
-            html_content = response.text
-
-            # Parse the HTML content with BeautifulSoup
-            soup = BeautifulSoup(html_content, 'html.parser')
-
-            # Find the video_scraper tag with the ID "sporty"
-            video_tag = soup.find('video', id='sporty')
-
-            if video_tag:
-                # Find the source tag within the video_scraper tag
-                source_tag = video_tag.find('source')
-
-                if source_tag:
-                    # Get the src attribute from the source tag
-                    src_attribute = source_tag['src']
-
-                    if src_attribute:
-                        return src_attribute
-                    else:
-                        return "The source tag does not have a src attribute."
-                else:
-                    return "Source tag not found within the video_scraper tag."
-            else:
-                return "Video tag with id 'sporty' not found."
-        else:
-            return f"Failed to retrieve the HTML. Status code: {response.status_code}"
-    except Exception as e:
-        return f"An error occurred: {str(e)}"
+def get_video_src_from_url(url: str) -> Optional[str]:
+    """Return the `src` of the `<video id="sporty">` source, or None if missing."""
+    response = requests.get(url, timeout=30)
+    response.raise_for_status()
+    soup = BeautifulSoup(response.text, "html.parser")
+    video_tag = soup.find("video", id="sporty")
+    if not video_tag:
+        log.warning("video tag not found at %s", url)
+        return None
+    source_tag = video_tag.find("source")
+    if not source_tag or not source_tag.get("src"):
+        log.warning("source tag missing src at %s", url)
+        return None
+    return source_tag["src"]

@@ -1,0 +1,15 @@
+# Daily MLB pitcher pipeline — single job.
+#
+# Install with:   crontab -e   then paste the line below, edited for your paths.
+# View installed: crontab -l
+#
+# Replace REPO with the absolute path to this repo, PYBIN with the venv python
+# (e.g. /Users/you/.../REPO/.venv/bin/python).
+#
+# daily_run.py both builds and uploads (uploads drain pending under YouTube's
+# daily quota — 3 longs + 3 shorts by default). Use --skip-upload for build-only.
+
+0 9 * * * cd REPO && PYBIN daily_run.py >> logs/cron.log 2>&1
+
+# Concrete example (edit and uncomment):
+# 0 9 * * * cd /Users/silverboi/Documents/GitHub/ultra-secret-automation-project && /Users/silverboi/Documents/GitHub/ultra-secret-automation-project/.venv/bin/python daily_run.py >> logs/cron.log 2>&1
