@@ -4,6 +4,12 @@
 <h1>Results · {{ result_date_long }}</h1>
 <p class="subtitle">{{ games|length }} completed game{{ '' if games|length == 1 else 's' }}.</p>
 
+<div class="youtube-cta">
+  <h2>Watch the daily recap</h2>
+  <p>Every morning we recap the previous day's predictions vs actual results on YouTube.</p>
+  <a class="cta-btn" href="{{ youtube_shorts_url }}" target="_blank" rel="noopener">Watch on YouTube →</a>
+</div>
+
 {% if recent_dates %}
 <p class="meta">
   Other dates:

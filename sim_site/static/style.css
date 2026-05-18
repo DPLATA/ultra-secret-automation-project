@@ -171,3 +171,35 @@ footer .footer-signup {
 footer .footer-meta {
   padding-top: 8px;
 }
+
+/* YouTube CTA — on the results pages and as a subtitle link on the homepage */
+.youtube-cta {
+  margin: 20px 0 24px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-align: center;
+  background: #fafbfc;
+}
+.youtube-cta h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+.youtube-cta p {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.cta-btn {
+  display: inline-block;
+  padding: 8px 20px;
+  background: #ff0000;
+  color: #fff !important;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+}
+.cta-btn:hover {
+  background: #cc0000;
+}

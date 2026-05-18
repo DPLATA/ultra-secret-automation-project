@@ -38,6 +38,7 @@ GAMES_DIR = DATA_DIR / "games"
 
 TEAM_LOOKUP = {t["Team ID"]: t for t in MLB_TEAMS_INFO}
 CALIBRATING_THROUGH_MONTH = 5  # show "calibrating" splash through April
+YOUTUBE_SHORTS_URL = "https://www.youtube.com/@silverboy7322/shorts"
 
 
 def load_game_sims() -> dict[str, list[dict]]:
@@ -98,7 +99,10 @@ def render(today: dt.date | None = None) -> None:
     env = Environment(loader=FileSystemLoader(TEMPLATES_DIR), autoescape=select_autoescape())
     generated_at = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
-    common = {"generated_at": generated_at}
+    common = {
+        "generated_at": generated_at,
+        "youtube_shorts_url": YOUTUBE_SHORTS_URL,
+    }
 
     SITE_DIR.mkdir(parents=True, exist_ok=True)
     copy_static()

@@ -2,7 +2,12 @@
 {% block title %}{{ slate_date }} predictions · MLB Sims{% endblock %}
 {% block content %}
 <h1>{{ slate_date_long }}</h1>
-<p class="subtitle">{{ games|length }} game{{ '' if games|length == 1 else 's' }} on the slate. Click a row for the full distribution.</p>
+<p class="subtitle">
+  {{ games|length }} game{{ '' if games|length == 1 else 's' }} on the slate. Click a row for the full distribution.
+  {% if youtube_shorts_url %} ·
+  <a href="{{ youtube_shorts_url }}" target="_blank" rel="noopener">Watch yesterday's recap →</a>
+  {% endif %}
+</p>
 
 {% if games %}
 <table>
