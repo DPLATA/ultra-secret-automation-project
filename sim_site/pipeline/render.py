@@ -38,7 +38,7 @@ GAMES_DIR = DATA_DIR / "games"
 
 TEAM_LOOKUP = {t["Team ID"]: t for t in MLB_TEAMS_INFO}
 CALIBRATING_THROUGH_MONTH = 5  # show "calibrating" splash through April
-YOUTUBE_SHORTS_URL = "https://www.youtube.com/@silverboy7322/shorts"
+YOUTUBE_SHORTS_URL = "https://www.youtube.com/@mlbsims/shorts"
 
 
 def load_game_sims() -> dict[str, list[dict]]:

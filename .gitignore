@@ -14,3 +14,5 @@ secrets/
 # sim_site build artifacts
 sim_site/site/
 sim_site/data/
+TODO.md
+scripts/build_one_pitcher.py
