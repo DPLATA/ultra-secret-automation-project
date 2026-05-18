@@ -39,6 +39,18 @@ pitchers:
     team: Giants
   - name: Garrett Crochet
     team: Red Sox
+  - name: Framber Valdez
+    team: Tigers
+  - name: Aaron Nola
+    team: Phillies
+  - name: Yoshinobu Yamamoto
+    team: Dodgers
+  - name: Griffin Jax
+    team: Rays
+  - name: Javier Assad
+    team: Cubs
+  - name: Shohei Ohtani
+    team: Dodgers
   # - name: Javier Assad
   #   team: Cubs
   # - name: Yu Darvish

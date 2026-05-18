@@ -69,3 +69,53 @@ def for_short(
         {pitcher_name, pitch_name, "MLB", "baseball", "pitching", "shorts"}
     )
     return Metadata(title=title, description=description, tags=tags)
+
+
+# Day-of-week rotation for the daily Predicted-vs-Actual recap Short.
+# Index 0 = Monday (Python datetime convention). Lets us A/B test hook formats
+# without manual intervention; the channel cycles through 4 patterns per week.
+def _recap_title(target_date, correct: int, total: int) -> str:
+    formats = [
+        # Mon — list framing
+        lambda: "Every MLB matchup our model called yesterday #Shorts",
+        # Tue — stat-led
+        lambda: f"Our MLB model went {correct}/{total} yesterday. Watch the misses. #Shorts",
+        # Wed — drama hook
+        lambda: f"Did our MLB model fix itself? {correct}/{total} yesterday #Shorts",
+        # Thu — comeback / streak
+        lambda: f"The MLB model bounced back yesterday ({correct}/{total}) #Shorts",
+        # Fri — list again
+        lambda: "Every MLB matchup our model called yesterday #Shorts",
+        # Sat — stat-led again
+        lambda: f"Our MLB model went {correct}/{total} yesterday. Watch the misses. #Shorts",
+        # Sun — drama again
+        lambda: f"Did our MLB model fix itself? {correct}/{total} yesterday #Shorts",
+    ]
+    return formats[target_date.weekday()]()
+
+
+def for_recap(target_date, correct: int, total: int) -> Metadata:
+    """Metadata for the daily Predicted-vs-Actual recap Short.
+
+    Title rotates by day-of-week so the channel auto-tests four hook variants
+    across the week without manual intervention.
+    """
+    title = _truncate(_recap_title(target_date, correct, total), _MAX_TITLE_LEN)
+    description_lines = [
+        f"How accurate was the model? A daily recap of MLB Sims' predicted vs "
+        f"actual results from {target_date.strftime('%B %-d, %Y')}.",
+        "",
+        f"{correct} out of {total} winners called.",
+        "",
+        "10,000 Poisson Monte Carlo simulations per game using park-adjusted "
+        "team strengths. No starting pitcher or lineup adjustments yet — pure "
+        "season averages.",
+        "",
+        f"Tomorrow's picks: {_SITE_URL}",
+        "",
+        "#shorts #mlb #baseball #predictions #datascience",
+    ]
+    description = "\n".join(description_lines)
+    tags = ["shorts", "mlb", "baseball", "mlb predictions", "baseball analytics",
+            "mlb sims", "sabermetrics", "poisson", "predictions vs actual"]
+    return Metadata(title=title, description=description, tags=tags)

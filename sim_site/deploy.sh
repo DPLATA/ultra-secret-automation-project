@@ -29,6 +29,10 @@ if [ ! -d "$RENDERED" ]; then
   exit 1
 fi
 
+# Sync local mirror with remote first — the e2-micro cron and the Mac can both
+# push to this repo, so the local checkout may be stale.
+git -C "$SITE_REPO" pull --rebase --quiet origin main
+
 # Mirror rendered output into the public checkout. --delete removes stale files
 # (e.g. yesterday's slate pages once they're no longer current). Exclude .git so
 # we don't clobber the public repo's own history.

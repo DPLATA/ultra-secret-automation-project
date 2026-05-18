@@ -162,3 +162,12 @@ tr.game-link:hover td { background: #f3f4f6; }
   th, td { padding: 6px 6px; font-size: 13px; }
   h1 { font-size: 20px; }
 }
+
+/* Newsletter signup — global footer (compact) */
+footer .footer-signup {
+  max-width: 360px;
+  margin: 0 auto 16px;
+}
+footer .footer-meta {
+  padding-top: 8px;
+}

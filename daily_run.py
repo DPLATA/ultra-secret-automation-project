@@ -4,8 +4,12 @@ Per pitcher:
   1. Fetch recent Statcast data and download new clips.
   2. Persist each new clip in the state DB.
   3. Build one long horizontal compilation of every new clip.
-  4. Build one vertical Short per pitch type (above the min-clips threshold).
-  5. Record each compilation + metadata in the state DB.
+  4. Record the compilation + metadata in the state DB.
+
+After all pitchers, build yesterday's Predicted-vs-Actual recap Short and
+queue it for upload alongside the long compilations. The recap uses
+predictions already written to sim_site/data/games/{yesterday}/ by the
+sim_site cron 24h earlier.
 
 Writes a per-run manifest JSON consumed by the YouTube uploader.
 The script always exits 0 — pitcher-level failures are logged and
@@ -15,10 +19,13 @@ isolated so one bad pitcher never aborts the run.
 import argparse
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
-from automation import compiler, config as config_mod, manifest as manifest_mod, metadata
+from automation import (
+    compiler, config as config_mod, manifest as manifest_mod, metadata,
+    recap_compiler,
+)
 from automation.logging_setup import setup as setup_logging
 from automation.state import State
 from automation.uploader import drain_pending
@@ -99,25 +106,48 @@ def _build_for_pitcher(pcfg, paths, state: State, run_date: str):
                 pcfg.name, game_date,
             )
 
-        try:
-            shorts = compiler.build_shorts_per_pitch_type(
-                pitcher_name=pcfg.name,
-                run_date=game_date,
-                clips=game_clips,
-                compilations_dir=paths.compilations_dir,
-                min_clips=pcfg.short_min_clips,
-                max_clips=pcfg.short_max_clips,
-                strikes_only=pcfg.strikes_only_shorts,
-            )
-            for s in shorts:
-                meta = metadata.for_short(pcfg.name, game_date, s.pitch_name, s.clips)
-                _record(manifest_mod.make_entry(pcfg.name, game_date, s, meta))
-        except Exception:
-            log.exception(
-                "shorts pass failed for %s game_date=%s", pcfg.name, game_date,
-            )
-
     return manifest_entries
+
+
+def _build_daily_recap(paths, state: State, run_date: str):
+    """Build yesterday's Predicted-vs-Actual recap as a Short.
+
+    Uses sim_site predictions already written 24h ago by the sim_site cron.
+    Returns the manifest entry (or None if recap couldn't be built — e.g.,
+    missing predictions, no games on that date).
+    """
+    target_date = (datetime.strptime(run_date, "%Y-%m-%d") - timedelta(days=1)).date()
+    try:
+        result = recap_compiler.build_recap(
+            target_date=target_date,
+            compilations_dir=paths.compilations_dir,
+        )
+    except Exception:
+        log.exception("recap build failed for %s", target_date)
+        return None
+    if result is None:
+        return None
+
+    meta = metadata.for_recap(target_date, result.correct, result.total)
+    entry = manifest_mod.make_entry(
+        pitcher_name="MLB Sims",
+        run_date=target_date.isoformat(),
+        built=result.built,
+        metadata=meta,
+    )
+    state.record_compilation(
+        compilation_id=entry.compilation_id,
+        pitcher_name=entry.pitcher_name,
+        run_date=entry.run_date,
+        kind=entry.kind,
+        pitch_name=entry.pitch_name,
+        output_path=entry.output_path,
+        title=entry.title,
+        description=entry.description,
+        tags_json=json.dumps(entry.tags),
+    )
+    log.info("recap queued: %s (%d/%d winners)", entry.compilation_id, result.correct, result.total)
+    return entry
 
 
 def main() -> int:
@@ -147,6 +177,10 @@ def main() -> int:
             all_entries.extend(_build_for_pitcher(pcfg, cfg.paths, state, run_date))
         except Exception:
             log.exception("pitcher run failed: %s", pcfg.name)
+
+    recap_entry = _build_daily_recap(cfg.paths, state, run_date)
+    if recap_entry is not None:
+        all_entries.append(recap_entry)
 
     manifest_path = manifest_mod.write_run_manifest(
         cfg.paths.manifest_dir, run_date, all_entries

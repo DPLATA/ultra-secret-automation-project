@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}MLB Sims{% endblock %}</title>
   <link rel="stylesheet" href="/style.css">
+  <script>
+    (function(w,d,e,u,f,l,n){w[f]=w[f]||function(){(w[f].q=w[f].q||[])
+    .push(arguments);},l=d.createElement(e),l.async=1,l.src=u,
+    n=d.getElementsByTagName(e)[0],n.parentNode.insertBefore(l,n);})
+    (window,document,'script','https://assets.mailerlite.com/js/universal.js','ml');
+    ml('account', '2358834');
+  </script>
 </head>
 <body>
   <header>
@@ -19,7 +26,12 @@
     {% block content %}{% endblock %}
   </main>
   <footer>
-    Updated {{ generated_at }} · <a href="/methodology">how these numbers are made</a>
+    <div class="footer-signup">
+      <div class="ml-embedded" data-form="Nh5wvI"></div>
+    </div>
+    <div class="footer-meta">
+      Updated {{ generated_at }} · <a href="/methodology">how these numbers are made</a>
+    </div>
   </footer>
 </body>
 </html>
