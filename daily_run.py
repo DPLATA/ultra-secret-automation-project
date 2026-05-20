@@ -128,7 +128,7 @@ def _build_daily_recap(paths, state: State, run_date: str):
     if result is None:
         return None
 
-    meta = metadata.for_recap(target_date, result.correct, result.total)
+    meta = metadata.for_recap(target_date, result.correct, result.total, result.rows)
     entry = manifest_mod.make_entry(
         pitcher_name="MLB Sims",
         run_date=target_date.isoformat(),

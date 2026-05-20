@@ -83,6 +83,7 @@ class RecapResult:
     built: BuiltCompilation
     correct: int
     total: int
+    rows: list[dict]  # per-game prediction-vs-actual details for metadata callouts
 
 
 def _load_predictions(target_date: dt.date) -> list[dict]:
@@ -260,7 +261,7 @@ def build_recap(target_date: dt.date, compilations_dir: Path) -> RecapResult | N
 
     if output.exists():
         log.info("recap: already built at %s; reusing", output)
-        return RecapResult(built=built, correct=correct, total=total)
+        return RecapResult(built=built, correct=correct, total=total, rows=rows)
 
     work_dir = out_dir / "_work"
     work_dir.mkdir(exist_ok=True)
