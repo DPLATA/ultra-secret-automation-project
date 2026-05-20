@@ -107,7 +107,7 @@ def download_pitcher_videos(
                 log.debug("skipping already-recorded play_id=%s", play_id)
                 continue
 
-            start_speed = entry["start_speed"] or 0
+            start_speed = entry.get("start_speed") or 0
             rounded_speed = (
                 math.ceil(start_speed)
                 if start_speed % 1 >= 0.5

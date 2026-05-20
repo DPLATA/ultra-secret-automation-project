@@ -54,7 +54,14 @@ def _safe_filename(s: str) -> str:
 
 
 def _ffmpeg_concat_demuxer(clip_paths: Sequence[str], output_path: Path) -> None:
-    """Fast concat via the concat demuxer; used for the long horizontal."""
+    """Concat for the long horizontal — tries stream-copy first, falls back to re-encode.
+
+    Stream-copy is ~400x faster than re-encode on the e2-micro (seconds vs hours)
+    but is vulnerable to PTS corruption when one input clip has bad timestamp
+    metadata — historically that produced multi-hour bogus durations. We detect
+    that case by comparing output duration against the sum of input durations,
+    and fall back to the slow re-encode path if drift > 60s.
+    """
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile(
         "w", suffix=".txt", delete=False, dir=output_path.parent
@@ -64,7 +71,40 @@ def _ffmpeg_concat_demuxer(clip_paths: Sequence[str], output_path: Path) -> None
             abspath = os.path.abspath(p).replace("'", r"'\''")
             f.write(f"file '{abspath}'\n")
     try:
-        cmd = [
+        expected_duration = sum(_ffprobe_duration(p) for p in clip_paths)
+
+        # Fast path: stream-copy with PTS regeneration safety flags.
+        copy_cmd = [
+            "ffmpeg", "-y",
+            "-f", "concat", "-safe", "0",
+            "-i", concat_list,
+            "-c", "copy",
+            "-fflags", "+genpts",
+            "-avoid_negative_ts", "make_zero",
+            str(output_path),
+        ]
+        copy_result = subprocess.run(copy_cmd, capture_output=True, text=True)
+        if copy_result.returncode == 0:
+            actual = _ffprobe_duration(str(output_path))
+            drift = abs(actual - expected_duration)
+            if drift <= 60.0:
+                log.info(
+                    "concat (stream-copy) ok: %s (%.0fs, drift=%.1fs)",
+                    output_path, actual, drift,
+                )
+                return
+            log.warning(
+                "concat (stream-copy) drift %.1fs > 60s — likely PTS corruption; "
+                "falling back to re-encode for %s", drift, output_path,
+            )
+        else:
+            log.warning(
+                "concat (stream-copy) failed (rc=%s) — falling back to re-encode for %s\n%s",
+                copy_result.returncode, output_path, copy_result.stderr[-500:],
+            )
+
+        # Slow fallback path: full re-encode (the historical implementation).
+        reencode_cmd = [
             "ffmpeg", "-y",
             "-f", "concat", "-safe", "0",
             "-i", concat_list,
@@ -72,10 +112,11 @@ def _ffmpeg_concat_demuxer(clip_paths: Sequence[str], output_path: Path) -> None
             "-c:a", "aac", "-b:a", "128k",
             str(output_path),
         ]
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(reencode_cmd, capture_output=True, text=True)
         if result.returncode != 0:
             log.error("ffmpeg failed (code %s):\n%s", result.returncode, result.stderr[-2000:])
             raise RuntimeError(f"ffmpeg concat failed for {output_path}")
+        log.info("concat (re-encode fallback) ok: %s", output_path)
     finally:
         try:
             os.remove(concat_list)
