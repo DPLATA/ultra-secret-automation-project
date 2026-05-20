@@ -113,11 +113,12 @@ def download_pitcher_videos(
                 if start_speed % 1 >= 0.5
                 else math.floor(start_speed)
             )
-            call_type = _classify_call(entry["call_name"])
+            call_name = entry.get("call_name") or "Pitch"
+            call_type = _classify_call(call_name)
             caption = (
                 f"{entry['pitcher_name']} vs. {entry['batter_name']} "
                 f"{entry['pitch_name']} {rounded_speed} mph "
-                f"{entry['call_name']} #shorts"
+                f"{call_name} #shorts"
             )
             filename = (
                 f"{entry['pitcher_name']} - {entry['batter_name']} - "

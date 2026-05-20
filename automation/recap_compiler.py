@@ -277,4 +277,4 @@ def build_recap(target_date: dt.date, compilations_dir: Path) -> RecapResult | N
     _concat(parts, output)
 
     log.info("recap: built %s (%d/%d correct, %d games)", output, correct, total, total)
-    return RecapResult(built=built, correct=correct, total=total)
+    return RecapResult(built=built, correct=correct, total=total, rows=rows)
