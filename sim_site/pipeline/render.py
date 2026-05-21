@@ -81,6 +81,44 @@ def is_calibrating(today: dt.date) -> bool:
     return today.month < CALIBRATING_THROUGH_MONTH
 
 
+def yesterday_record(today: dt.date, sims: dict, completed: pd.DataFrame) -> dict | None:
+    """Walk back from today to find the most recent date with both predictions
+    and actuals; return {date, correct, total} for that day. Powers the hero's
+    live social-proof line ('the model went X/N yesterday'). Returns None if
+    no eligible day exists within the last 14 days.
+    """
+    if completed.empty:
+        return None
+    for back in range(1, 15):
+        d = today - dt.timedelta(days=back)
+        date_str = d.isoformat()
+        if date_str not in sims:
+            continue
+        actuals = completed[completed["date"] == date_str]
+        if actuals.empty:
+            continue
+        actuals_by_pk = {int(r.game_pk): r for _, r in actuals.iterrows()}
+        correct = total = 0
+        for pred in sims[date_str]:
+            actual = actuals_by_pk.get(int(pred["game_pk"]))
+            if actual is None:
+                continue
+            pred_winner = "home" if pred["win_probability"]["home"] > pred["win_probability"]["away"] else "away"
+            actual_winner = "home" if actual.home_runs > actual.away_runs else "away"
+            total += 1
+            if pred_winner == actual_winner:
+                correct += 1
+        if total >= 5:
+            return {"date": date_str, "correct": correct, "total": total}
+    return None
+
+
+# MailerLite list endpoint for direct form POST (same list as the footer embed).
+MAILERLITE_SUBSCRIBE_URL = (
+    "https://assets.mailerlite.com/jsonp/2358834/forms/187827545546163994/subscribe"
+)
+
+
 def copy_static() -> None:
     """Copy everything under sim_site/static/ into the site output dir."""
     if not STATIC_DIR.exists():
@@ -102,6 +140,7 @@ def render(today: dt.date | None = None) -> None:
     common = {
         "generated_at": generated_at,
         "youtube_shorts_url": YOUTUBE_SHORTS_URL,
+        "mailerlite_subscribe_url": MAILERLITE_SUBSCRIBE_URL,
     }
 
     SITE_DIR.mkdir(parents=True, exist_ok=True)
@@ -121,6 +160,8 @@ def render(today: dt.date | None = None) -> None:
 
     # Slate pages from simulated game JSONs
     sims = load_game_sims()
+    completed_now = load_completed_games(today.year)
+    common["yesterday_record"] = yesterday_record(today, sims, completed_now)
     slate_tpl = env.get_template("slate.html")
     game_tpl = env.get_template("game.html")
 
@@ -130,6 +171,7 @@ def render(today: dt.date | None = None) -> None:
             slate_date=date_str,
             slate_date_long=long_date(date_str),
             games=games,
+            show_footer_signup=False,  # hero already has the signup
             **common,
         )
         write(SITE_DIR / "games" / date_str / "index.html", slate_html)
@@ -149,11 +191,12 @@ def render(today: dt.date | None = None) -> None:
                   slate_date=latest_date,
                   slate_date_long=long_date(latest_date),
                   games=sims[latest_date],
+                  show_footer_signup=False,  # hero already has the signup
                   **common,
               ))
 
     # Results pages from historical box scores
-    completed = load_completed_games(today.year)
+    completed = completed_now
     results_tpl = env.get_template("results.html")
     if not completed.empty:
         recent_dates = sorted(completed["date"].unique(), reverse=True)[:14]

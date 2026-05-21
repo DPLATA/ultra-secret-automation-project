@@ -163,6 +163,96 @@ tr.game-link:hover td { background: #f3f4f6; }
   h1 { font-size: 20px; }
 }
 
+/* Newsletter signup — inline hero on the homepage above the games table.
+ * Uses a custom HTML form posting directly to MailerLite's subscribe endpoint
+ * (rather than the MailerLite Universal embed) so we have full styling control
+ * and don't fight duplicate-ID issues with the footer embed. */
+.hero-signup-inline {
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 22px 24px;
+  margin: 8px 0 28px;
+  text-align: center;
+}
+.hero-signup-inline h2 {
+  font-size: 22px;
+  margin: 0 0 6px;
+  color: var(--fg);
+  font-weight: 700;
+}
+.hero-signup-inline .record-stat {
+  color: var(--accent);
+  font-weight: 800;
+}
+.hero-signup-inline p {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0 0 16px;
+}
+.hero-signup-inline .hero-signup-meta {
+  font-size: 12px;
+  margin: 12px 0 0;
+}
+.hero-signup-thanks {
+  padding: 6px 0;
+}
+.hero-signup-thanks h2 {
+  font-size: 22px;
+  margin: 0 0 6px;
+  color: var(--good);
+  font-weight: 700;
+}
+.hero-signup-thanks p {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0;
+}
+.hero-signup-form {
+  display: flex;
+  gap: 8px;
+  max-width: 420px;
+  margin: 0 auto;
+}
+.hero-signup-form input[type="email"] {
+  flex: 1;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  background: #ffffff;
+  color: var(--fg);
+  font-family: inherit;
+}
+.hero-signup-form input[type="email"]:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.hero-signup-form button {
+  padding: 11px 20px;
+  background: var(--accent);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.15s ease;
+  white-space: nowrap;
+}
+.hero-signup-form button:hover {
+  background: #1858c4;
+}
+@media (max-width: 480px) {
+  .hero-signup-form {
+    flex-direction: column;
+  }
+  .hero-signup-inline h2 {
+    font-size: 19px;
+  }
+}
+
 /* Newsletter signup — global footer (compact) */
 footer .footer-signup {
   max-width: 420px;

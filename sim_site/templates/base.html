@@ -26,9 +26,11 @@
     {% block content %}{% endblock %}
   </main>
   <footer>
+    {% if show_footer_signup|default(True) %}
     <div class="footer-signup">
       <div class="ml-embedded" data-form="Nh5wvI"></div>
     </div>
+    {% endif %}
     <div class="footer-meta">
       Updated {{ generated_at }} · <a href="/methodology">how these numbers are made</a>
     </div>
