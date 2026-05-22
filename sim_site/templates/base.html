@@ -3,7 +3,36 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}MLB Sims{% endblock %}</title>
+  <title>{% block title %}MLB Sims · Daily MLB Predictions{% endblock %}</title>
+  <meta name="description" content="{% block description %}Daily MLB predictions from a Poisson Monte Carlo model — 10,000 simulations per game with park-adjusted team strengths. Updated every morning before first pitch.{% endblock %}">
+
+  {# Canonical + OG / Twitter Card #}
+  <link rel="canonical" href="https://mlbsims.com{% block canonical_path %}/{% endblock %}">
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:site_name" content="MLB Sims">
+  <meta property="og:title" content="{% block og_title %}{{ self.title() }}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}{{ self.description() }}{% endblock %}">
+  <meta property="og:url" content="https://mlbsims.com{{ self.canonical_path() }}">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="{{ self.og_title() }}">
+  <meta name="twitter:description" content="{{ self.og_description() }}">
+
+  {# Site-wide structured data: WebSite #}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "MLB Sims",
+    "url": "https://mlbsims.com",
+    "description": "Daily MLB predictions from a Poisson Monte Carlo simulation model.",
+    "publisher": {
+      "@type": "Organization",
+      "name": "MLB Sims",
+      "url": "https://mlbsims.com"
+    }
+  }
+  </script>
+
   <link rel="stylesheet" href="/style.css">
   <script>
     (function(w,d,e,u,f,l,n){w[f]=w[f]||function(){(w[f].q=w[f].q||[])
@@ -12,6 +41,7 @@
     (window,document,'script','https://assets.mailerlite.com/js/universal.js','ml');
     ml('account', '2358834');
   </script>
+  {% block extra_head %}{% endblock %}
 </head>
 <body>
   <header>

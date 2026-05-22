@@ -225,9 +225,48 @@ def render(today: dt.date | None = None) -> None:
                   **common,
               ))
 
+    write_sitemap(SITE_DIR, sims, completed, today)
+
     print(f"Rendered site to {SITE_DIR}")
     print(f"  slate dates: {sorted(sims.keys())}")
     print(f"  results dates: {len(completed['date'].unique()) if not completed.empty else 0}")
+
+
+SITE_BASE = "https://mlbsims.com"
+
+
+def write_sitemap(site_dir: Path, sims: dict, completed: pd.DataFrame, today: dt.date) -> None:
+    """Generate sitemap.xml listing every public URL on the site, with lastmod.
+
+    Search engines (especially for new sites) rely on the sitemap to discover
+    pages — without it, Google may take weeks to find non-homepage URLs since
+    nothing links to them yet.
+    """
+    today_iso = today.isoformat()
+    urls: list[tuple[str, str]] = [
+        (f"{SITE_BASE}/", today_iso),
+        (f"{SITE_BASE}/methodology", today_iso),
+        (f"{SITE_BASE}/results/", today_iso),
+    ]
+
+    # Slate pages + per-game detail pages
+    for date_str, games in sorted(sims.items()):
+        urls.append((f"{SITE_BASE}/games/{date_str}/", date_str))
+        for g in games:
+            slug = f"{g['away']['abbr']}-at-{g['home']['abbr']}"
+            urls.append((f"{SITE_BASE}/games/{date_str}/{slug}", date_str))
+
+    # Per-date results pages
+    if not completed.empty:
+        for date_str in sorted(set(completed["date"].tolist()), reverse=True)[:30]:
+            urls.append((f"{SITE_BASE}/results/{date_str}/", date_str))
+
+    lines = ['<?xml version="1.0" encoding="UTF-8"?>',
+             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    for loc, lastmod in urls:
+        lines.append(f"  <url><loc>{loc}</loc><lastmod>{lastmod}</lastmod></url>")
+    lines.append("</urlset>")
+    (site_dir / "sitemap.xml").write_text("\n".join(lines))
 
 
 if __name__ == "__main__":

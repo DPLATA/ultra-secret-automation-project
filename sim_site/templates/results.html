@@ -1,5 +1,7 @@
 {% extends "base.html" %}
-{% block title %}Results · {{ result_date }} · MLB Sims{% endblock %}
+{% block title %}MLB Results · {{ result_date_long }} · MLB Sims{% endblock %}
+{% block description %}Completed MLB game results from {{ result_date_long }} — final scores by matchup. Compare with our daily Poisson prediction model at mlbsims.com.{% endblock %}
+{% block canonical_path %}/results/{{ result_date }}/{% endblock %}
 {% block content %}
 <h1>Results · {{ result_date_long }}</h1>
 <p class="subtitle">{{ games|length }} completed game{{ '' if games|length == 1 else 's' }}.</p>

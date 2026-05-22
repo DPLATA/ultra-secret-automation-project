@@ -1,5 +1,32 @@
 {% extends "base.html" %}
-{% block title %}{{ g.away.abbr }} @ {{ g.home.abbr }} · {{ g.date }} · MLB Sims{% endblock %}
+{% block title %}{{ g.away.name }} vs {{ g.home.name }} Prediction · {{ g.date }} · MLB Sims{% endblock %}
+{% block description %}{{ g.away.name }} at {{ g.home.name }} on {{ g.date }} — Poisson Monte Carlo prediction: {{ g.home.abbr }} {{ "%.0f"|format(g.win_probability.home * 100) }}% / {{ g.away.abbr }} {{ "%.0f"|format(g.win_probability.away * 100) }}%, expected {{ "%.1f"|format(g.expected.away_runs) }}–{{ "%.1f"|format(g.expected.home_runs) }}. From 10,000 simulations.{% endblock %}
+{% block canonical_path %}/games/{{ g.date }}/{{ g.away.abbr }}-at-{{ g.home.abbr }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block extra_head %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SportsEvent",
+  "name": "{{ g.away.name }} at {{ g.home.name }}",
+  "startDate": "{{ g.game_time_utc or g.date + 'T00:00:00Z' }}",
+  "sport": "Baseball",
+  "url": "https://mlbsims.com/games/{{ g.date }}/{{ g.away.abbr }}-at-{{ g.home.abbr }}",
+  "location": {
+    "@type": "StadiumOrArena",
+    "name": "{{ g.venue or g.home.name + ' home venue' }}"
+  },
+  "homeTeam": {
+    "@type": "SportsTeam",
+    "name": "{{ g.home.name }}"
+  },
+  "awayTeam": {
+    "@type": "SportsTeam",
+    "name": "{{ g.away.name }}"
+  }
+}
+</script>
+{% endblock %}
 {% block content %}
 <div class="matchup-header">
   <h1>{{ g.away.name }} <span class="vs">@</span> {{ g.home.name }}</h1>

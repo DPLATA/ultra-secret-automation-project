@@ -1,5 +1,7 @@
 {% extends "base.html" %}
-{% block title %}{{ slate_date }} predictions · MLB Sims{% endblock %}
+{% block title %}MLB Predictions · {{ slate_date_long }} · MLB Sims{% endblock %}
+{% block description %}MLB predictions for {{ slate_date_long }} — {{ games|length }} game{{ '' if games|length == 1 else 's' }}, win probabilities, expected runs, and most-likely scores from 10,000 Poisson simulations per matchup.{% endblock %}
+{% block canonical_path %}/games/{{ slate_date }}/{% endblock %}
 {% block content %}
 <h1>{{ slate_date_long }}</h1>
 <p class="subtitle">
