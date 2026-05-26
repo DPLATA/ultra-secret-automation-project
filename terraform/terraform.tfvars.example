@@ -1,0 +1,6 @@
+project_id          = "project-469ed029-9d3c-4695-abd"
+region              = "us-east1"
+zone                = "us-east1-b"
+instance_tier       = "db-custom-1-3840"
+disk_size_gb        = 10
+deletion_protection = true

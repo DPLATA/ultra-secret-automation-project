@@ -26,6 +26,9 @@ pandas==2.2.2
 pillow==10.3.0
 pyarrow==16.1.0
 pybaseball==2.2.7
+SQLAlchemy==2.0.36
+alembic==1.14.0
+psycopg2-binary==2.9.10
 pycparser==2.22
 PyGithub==2.3.0
 PyJWT==2.8.0
