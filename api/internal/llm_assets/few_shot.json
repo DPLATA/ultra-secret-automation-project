@@ -1,0 +1,22 @@
+[
+  {
+    "question": "highest spin rate sliders this season",
+    "sql": "SELECT player_name, release_spin_rate, release_speed, game_date FROM pitches WHERE pitch_name = 'Slider' AND release_spin_rate IS NOT NULL ORDER BY release_spin_rate DESC LIMIT 10"
+  },
+  {
+    "question": "Paul Skenes pitch arsenal",
+    "sql": "SELECT pitch_name, count(*) AS pitches, round(avg(release_speed)::numeric, 1) AS avg_mph, round(avg(release_spin_rate)::numeric, 0) AS avg_spin, round(100.0 * sum(CASE WHEN description = 'swinging_strike' THEN 1 ELSE 0 END) / count(*), 1) AS whiff_pct FROM pitches WHERE player_name = 'Skenes, Paul' GROUP BY 1 ORDER BY 2 DESC"
+  },
+  {
+    "question": "most strikeouts thrown this season",
+    "sql": "SELECT player_name, count(*) AS k FROM pitches WHERE events = 'strikeout' GROUP BY 1 ORDER BY 2 DESC LIMIT 10"
+  },
+  {
+    "question": "fastest pitches of the season",
+    "sql": "SELECT player_name, pitch_name, release_speed, game_date FROM pitches WHERE release_speed IS NOT NULL ORDER BY release_speed DESC LIMIT 10"
+  },
+  {
+    "question": "how many games ended on a strikeout yesterday",
+    "sql": "WITH last_ab AS (SELECT game_pk, max(at_bat_number) AS final_ab FROM pitches WHERE game_date = CURRENT_DATE - 1 GROUP BY 1) SELECT count(*) AS games_ending_in_k FROM pitches p JOIN last_ab l ON p.game_pk = l.game_pk AND p.at_bat_number = l.final_ab WHERE p.game_date = CURRENT_DATE - 1 AND p.events = 'strikeout'"
+  }
+]

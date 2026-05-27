@@ -16,3 +16,6 @@ sim_site/site/
 sim_site/data/
 TODO.md
 scripts/build_one_pitcher.py
+
+# lead magnet PDFs (build outputs, regeneratable)
+lead_magnets/

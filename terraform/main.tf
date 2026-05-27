@@ -18,6 +18,11 @@ resource "random_password" "reader" {
   special = false
 }
 
+resource "random_password" "llm" {
+  length  = 32
+  special = false
+}
+
 resource "google_sql_database_instance" "statcast" {
   name             = "mlbsims-statcast"
   database_version = "POSTGRES_15"
@@ -72,6 +77,14 @@ resource "google_sql_user" "reader" {
   name     = "mlbsims_reader"
   instance = google_sql_database_instance.statcast.name
   password = random_password.reader.result
+}
+
+# Used by the Cloud Run LLM API service. Grants (SELECT pitches,
+# INSERT/SELECT queries) are applied via alembic migration 0002.
+resource "google_sql_user" "llm" {
+  name     = "mlbsims_llm"
+  instance = google_sql_database_instance.statcast.name
+  password = random_password.llm.result
 }
 
 data "google_project" "current" {
