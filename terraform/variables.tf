@@ -37,3 +37,15 @@ variable "deletion_protection" {
   type        = bool
   default     = true
 }
+
+variable "github_owner" {
+  description = "GitHub username/org that owns the repo. Used by Cloud Build trigger."
+  type        = string
+  default     = "DPLATA"
+}
+
+variable "github_repo" {
+  description = "GitHub repo name. Must already be connected to Cloud Build via console."
+  type        = string
+  default     = "ultra-secret-automation-project"
+}

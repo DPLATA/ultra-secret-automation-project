@@ -26,6 +26,21 @@ output "llm_password" {
   sensitive   = true
 }
 
+output "cloud_run_url" {
+  description = "Public HTTPS URL of the mlbsims-api Cloud Run service."
+  value       = google_cloud_run_v2_service.api.uri
+}
+
+output "artifact_registry_repo" {
+  description = "Full path of the Docker image registry."
+  value       = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.mlbsims.repository_id}"
+}
+
+output "api_runtime_sa" {
+  description = "Service account identity used by the Cloud Run service at runtime."
+  value       = google_service_account.api_runtime.email
+}
+
 output "e2_service_account_email" {
   description = "e2-micro's attached compute SA, granted cloudsql.client. Auth Proxy uses this automatically via metadata server — no key file needed."
   value       = "${data.google_project.current.number}-compute@developer.gserviceaccount.com"
