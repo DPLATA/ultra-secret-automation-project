@@ -31,7 +31,10 @@ func MustNewPgxPool(cfg *config.Config) *pgxpool.Pool {
 	}
 
 	if cfg.DBInstance != "" {
-		// Production path — Cloud SQL Go Connector
+		// Production path — Cloud SQL Go Connector. DialFunc intercepts the
+		// connection attempt; pgx's host/port are ignored once it's set, but
+		// we leave them at their parsed defaults so pgx doesn't error on
+		// validation (empty host causes "no such host" before DialFunc runs).
 		d, err := cloudsqlconn.NewDialer(context.Background())
 		if err != nil {
 			panic(fmt.Sprintf("cloudsqlconn.NewDialer: %v", err))
@@ -39,9 +42,6 @@ func MustNewPgxPool(cfg *config.Config) *pgxpool.Pool {
 		poolCfg.ConnConfig.DialFunc = func(ctx context.Context, _, _ string) (net.Conn, error) {
 			return d.Dial(ctx, cfg.DBInstance)
 		}
-		// Strip host/port from DSN — Dialer routes via instance name
-		poolCfg.ConnConfig.Host = ""
-		poolCfg.ConnConfig.Port = 0
 		slog.Info("db: using Cloud SQL Go Connector", "instance", cfg.DBInstance)
 	} else {
 		poolCfg.ConnConfig.Host = cfg.DBHost
