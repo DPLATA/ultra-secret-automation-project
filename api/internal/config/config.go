@@ -42,9 +42,10 @@ func MustLoad() *Config {
 		Port:              getEnv("PORT", "8080"),
 		OpenRouterAPIKey:  mustEnv("OPENROUTER_API_KEY"),
 		OpenRouterBaseURL: getEnv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
-		// Trial default — switch to "anthropic/claude-haiku-4.5" once we want to pay
-		// for higher quality + caching. Override at runtime via LLM_MODEL env var.
-		LLMModel:          getEnv("LLM_MODEL", "meta-llama/llama-3.3-70b-instruct:free"),
+		// Trial default — gpt-oss-120b free is reliable (provider OpenInference).
+		// Swap to anthropic/claude-haiku-4.5 when ready to pay for higher quality
+		// + Anthropic prompt caching. Override at runtime via LLM_MODEL env var.
+		LLMModel:          getEnv("LLM_MODEL", "openai/gpt-oss-120b:free"),
 		DBInstance:        os.Getenv("DB_INSTANCE"),
 		DBHost:            getEnv("DB_HOST", "127.0.0.1"),
 		DBPort:            getEnv("DB_PORT", "5432"),

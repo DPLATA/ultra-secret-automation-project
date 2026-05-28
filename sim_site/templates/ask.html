@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% block title %}Ask · MLB Sims{% endblock %}
+{% block description %}Ask any baseball question about the 2026 MLB season. Natural-language interface over 230,000+ Statcast pitches — top whiff rates, fastest pitches, pitcher arsenals, game-ending strikeouts, and more.{% endblock %}
+{% block canonical_path %}/ask{% endblock %}
+
+{% block content %}
+<section class="ask-hero">
+  <h1>Ask the model</h1>
+  <p class="subtitle">
+    Any question about the 2026 MLB season — answered live from
+    every Statcast pitch.
+  </p>
+</section>
+
+<section class="ask-input">
+  <form id="ask-form">
+    <textarea id="ask-q"
+              name="q"
+              placeholder="e.g. top 10 fastest pitches this season"
+              rows="2"
+              maxlength="500"
+              required></textarea>
+    <button type="submit" id="ask-submit">Ask</button>
+  </form>
+
+  <div class="ask-examples">
+    <span class="ask-examples-label">Try:</span>
+    <button type="button" class="example" data-q="Top 10 fastest pitches this season">fastest pitches</button>
+    <button type="button" class="example" data-q="Paul Skenes pitch arsenal">Skenes arsenal</button>
+    <button type="button" class="example" data-q="Most strikeouts thrown this season">strikeout leaders</button>
+    <button type="button" class="example" data-q="Highest spin rate sliders this season">spin leaders</button>
+    <button type="button" class="example" data-q="How many games ended on a strikeout yesterday">walk-off Ks</button>
+  </div>
+</section>
+
+<section class="ask-results" id="ask-results" hidden>
+  <div class="ask-summary" id="ask-summary"></div>
+  <div class="ask-table-wrap" id="ask-table-wrap"></div>
+  <details class="ask-sql-details">
+    <summary>Show the SQL</summary>
+    <pre id="ask-sql"></pre>
+  </details>
+</section>
+
+<section class="ask-error" id="ask-error" hidden></section>
+
+<p class="ask-meta">
+  Questions are logged anonymously to help us learn what people want to know.
+  Currently powered by an open-source model via OpenRouter; expect occasional
+  upstream rate limits.
+</p>
+
+<script>
+(function() {
+  const API_URL = 'https://mlbsims-api-5yazv6buda-ue.a.run.app/ask';
+
+  const form       = document.getElementById('ask-form');
+  const qInput     = document.getElementById('ask-q');
+  const submit     = document.getElementById('ask-submit');
+  const resultsEl  = document.getElementById('ask-results');
+  const summaryEl  = document.getElementById('ask-summary');
+  const tableEl    = document.getElementById('ask-table-wrap');
+  const sqlEl      = document.getElementById('ask-sql');
+  const errorEl    = document.getElementById('ask-error');
+
+  // Click an example chip → fill the textarea
+  document.querySelectorAll('.example').forEach(btn => {
+    btn.addEventListener('click', () => {
+      qInput.value = btn.dataset.q;
+      qInput.focus();
+    });
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const q = qInput.value.trim();
+    if (q.length < 3) return;
+
+    resetUI();
+    setLoading(true);
+
+    try {
+      const resp = await fetch(API_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({q}),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({error: 'request failed'}));
+        showError(err.error || 'Something went wrong.');
+        return;
+      }
+
+      await consumeSSE(resp);
+    } catch (err) {
+      showError('Connection error. Try again in a moment.');
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  function resetUI() {
+    errorEl.hidden = true;
+    errorEl.textContent = '';
+    resultsEl.hidden = false;
+    summaryEl.textContent = '';
+    sqlEl.textContent = '';
+    tableEl.innerHTML = '<div class="ask-loading">Thinking…</div>';
+  }
+
+  function setLoading(loading) {
+    submit.disabled = loading;
+    submit.textContent = loading ? 'Thinking…' : 'Ask';
+  }
+
+  function showError(msg) {
+    errorEl.textContent = msg;
+    errorEl.hidden = false;
+    resultsEl.hidden = true;
+  }
+
+  // Parse the SSE stream: events are blank-line-separated, each with `event:`
+  // and `data:` lines. The first `data` event carries SQL + rows; subsequent
+  // `summary` events stream the LLM's natural-language answer token-by-token.
+  async function consumeSSE(resp) {
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const {done, value} = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, {stream: true});
+
+      // Events are blank-line separated
+      const events = buffer.split('\n\n');
+      buffer = events.pop(); // keep incomplete tail in buffer
+
+      for (const evt of events) handleEvent(evt);
+    }
+  }
+
+  function handleEvent(evtBlock) {
+    let eventName = 'message';
+    let dataParts = [];
+    for (const line of evtBlock.split('\n')) {
+      if (line.startsWith('event:')) eventName = line.slice(6).trim();
+      else if (line.startsWith('data:')) dataParts.push(line.slice(5).trimStart());
+    }
+    const data = dataParts.join('\n');
+    if (!data) return;
+
+    if (eventName === 'data') {
+      try {
+        const obj = JSON.parse(data);
+        sqlEl.textContent = obj.sql || '';
+        tableEl.innerHTML = renderTable(obj.rows || []);
+      } catch (_) { /* ignore parse errors */ }
+    } else if (eventName === 'summary') {
+      // The server sends each token as a JSON-encoded string ("token").
+      let tok = data;
+      try { tok = JSON.parse(data); } catch (_) {}
+      summaryEl.textContent += tok;
+    } else if (eventName === 'error') {
+      let err;
+      try { err = JSON.parse(data); } catch (_) { err = {error: data}; }
+      showError(err.error || 'The summary failed, but the data above is correct.');
+    }
+    // 'done' event has no useful payload — just signals stream end.
+  }
+
+  function renderTable(rows) {
+    if (!rows.length) return '<p class="ask-empty">No rows returned.</p>';
+    const cols = Object.keys(rows[0]);
+    let html = '<div class="ask-table-scroll"><table class="ask-data"><thead><tr>';
+    for (const c of cols) html += `<th>${escapeHtml(c)}</th>`;
+    html += '</tr></thead><tbody>';
+    for (const row of rows) {
+      html += '<tr>';
+      for (const c of cols) {
+        const v = row[c];
+        html += `<td>${v == null ? '' : escapeHtml(formatCell(v))}</td>`;
+      }
+      html += '</tr>';
+    }
+    html += '</tbody></table></div>';
+    return html;
+  }
+
+  function formatCell(v) {
+    // Trim ISO timestamps to plain dates
+    if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v)) return v.slice(0, 10);
+    if (typeof v === 'number' && !Number.isInteger(v)) {
+      return Math.round(v * 100) / 100;
+    }
+    return String(v);
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => (
+      {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+    ));
+  }
+})();
+</script>
+{% endblock %}

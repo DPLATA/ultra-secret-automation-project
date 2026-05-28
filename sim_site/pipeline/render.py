@@ -151,6 +151,10 @@ def render(today: dt.date | None = None) -> None:
     write(SITE_DIR / "methodology.html",
           methodology_tpl.render(nav="methodology", **common))
 
+    # Ask — static page; JS POSTs to the Cloud Run API on submit.
+    ask_tpl = env.get_template("ask.html")
+    write(SITE_DIR / "ask.html", ask_tpl.render(nav="ask", **common))
+
     # Calibrating splash — used as index.html before May
     if is_calibrating(today):
         calib_tpl = env.get_template("calibrating.html")
@@ -246,6 +250,7 @@ def write_sitemap(site_dir: Path, sims: dict, completed: pd.DataFrame, today: dt
     urls: list[tuple[str, str]] = [
         (f"{SITE_BASE}/", today_iso),
         (f"{SITE_BASE}/methodology", today_iso),
+        (f"{SITE_BASE}/ask", today_iso),
         (f"{SITE_BASE}/results/", today_iso),
     ]
 

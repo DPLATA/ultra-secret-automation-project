@@ -40,6 +40,7 @@ func main() {
 
 	r := gin.New()
 	r.Use(gin.Recovery())
+	r.Use(corsMiddleware())
 	r.GET("/health", controller.Health)
 	r.POST("/ask", askCtl.Handle)
 
@@ -47,5 +48,32 @@ func main() {
 	if err := r.Run(":" + cfg.Port); err != nil {
 		slog.Error("server crashed", "err", err)
 		os.Exit(1)
+	}
+}
+
+// corsMiddleware allows browsers on mlbsims.com (and localhost during dev) to
+// hit the API. The frontend page lives on the static site at mlbsims.com/ask
+// and POSTs here — without these headers the browser blocks the response.
+func corsMiddleware() gin.HandlerFunc {
+	allowed := map[string]bool{
+		"https://mlbsims.com":     true,
+		"https://www.mlbsims.com": true,
+		"http://localhost:8000":   true,
+		"http://localhost:5173":   true,
+	}
+	return func(c *gin.Context) {
+		origin := c.GetHeader("Origin")
+		if allowed[origin] {
+			c.Header("Access-Control-Allow-Origin", origin)
+			c.Header("Vary", "Origin")
+			c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+			c.Header("Access-Control-Allow-Headers", "Content-Type")
+			c.Header("Access-Control-Max-Age", "3600")
+		}
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+		c.Next()
 	}
 }
