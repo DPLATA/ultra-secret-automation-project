@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -85,6 +86,7 @@ func (c *AskController) streamAnswer(g *gin.Context, answer *domain.Answer) {
 	// Subsequent events: summary chunks streamed from LLM
 	summaryCh, err := c.svc.StreamSummary(g.Request.Context(), answer)
 	if err != nil {
+		slog.Warn("StreamSummary failed", "err", err.Error(), "question", answer.Question)
 		g.SSEvent("error", gin.H{"error": "summary stream failed"})
 		return
 	}
