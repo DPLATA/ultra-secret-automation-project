@@ -1,8 +1,9 @@
 // LLMRepo — talks to OpenRouter (OpenAI-compatible chat completions API).
 //
 // OpenRouter gives us one endpoint + one API key for many providers. The
-// active model is set via LLM_MODEL env var (e.g. "anthropic/claude-haiku-4.5",
-// "openai/gpt-4o-mini", "google/gemini-2.5-flash"). Swappable without code change.
+// active model is set via LLM_MODEL env var. Defaults to a free OpenRouter
+// model (see config.go); switch to "anthropic/claude-haiku-4.5" or similar
+// without a code change when ready.
 //
 // Two methods:
 //   - GenerateSQL: one-shot completion; returns the SQL string.
