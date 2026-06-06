@@ -6,6 +6,10 @@
   <title>{% block title %}MLB Sims · Daily MLB Predictions{% endblock %}</title>
   <meta name="description" content="{% block description %}Daily MLB predictions from a Poisson Monte Carlo model — 10,000 simulations per game with park-adjusted team strengths. Updated every morning before first pitch.{% endblock %}">
 
+  {# Robots — default = index,follow. Templated thin pages (slate, game, per-date results)
+     override this block with noindex so Google's crawl budget goes to evergreen pages only. #}
+  {% block robots %}<meta name="robots" content="index,follow">{% endblock %}
+
   {# Canonical + OG / Twitter Card #}
   <link rel="canonical" href="https://mlbsims.com{% block canonical_path %}/{% endblock %}">
   <meta property="og:type" content="{% block og_type %}website{% endblock %}">

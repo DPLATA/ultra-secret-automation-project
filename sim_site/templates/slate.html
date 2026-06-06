@@ -2,6 +2,10 @@
 {% block title %}MLB Predictions · {{ slate_date_long }} · MLB Sims{% endblock %}
 {% block description %}MLB predictions for {{ slate_date_long }} — {{ games|length }} game{{ '' if games|length == 1 else 's' }}, win probabilities, expected runs, and most-likely scores from 10,000 Poisson simulations per matchup.{% endblock %}
 {% block canonical_path %}/games/{{ slate_date }}/{% endblock %}
+{# Per-date slate pages (/games/YYYY-MM-DD/) are noindex — thin, templated,
+   age out fast. The HOMEPAGE renders from this same template but with
+   is_archived=False so it stays indexable. render.py sets the flag. #}
+{% block robots %}{% if is_archived %}<meta name="robots" content="noindex,follow">{% else %}<meta name="robots" content="index,follow">{% endif %}{% endblock %}
 {% block content %}
 <h1>{{ slate_date_long }}</h1>
 <p class="subtitle">

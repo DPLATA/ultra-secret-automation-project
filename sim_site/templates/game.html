@@ -2,6 +2,9 @@
 {% block title %}{{ g.away.name }} vs {{ g.home.name }} Prediction · {{ g.date }} · MLB Sims{% endblock %}
 {% block description %}{{ g.away.name }} at {{ g.home.name }} on {{ g.date }} — Poisson Monte Carlo prediction: {{ g.home.abbr }} {{ "%.0f"|format(g.win_probability.home * 100) }}% / {{ g.away.abbr }} {{ "%.0f"|format(g.win_probability.away * 100) }}%, expected {{ "%.1f"|format(g.expected.away_runs) }}–{{ "%.1f"|format(g.expected.home_runs) }}. From 10,000 simulations.{% endblock %}
 {% block canonical_path %}/games/{{ g.date }}/{{ g.away.abbr }}-at-{{ g.home.abbr }}{% endblock %}
+{# Per-game prediction page — most numerous, most templated. noindex but follow
+   so internal links still pass discovery signal back up to indexable pages. #}
+{% block robots %}<meta name="robots" content="noindex,follow">{% endblock %}
 {% block og_type %}article{% endblock %}
 {% block extra_head %}
 <script type="application/ld+json">

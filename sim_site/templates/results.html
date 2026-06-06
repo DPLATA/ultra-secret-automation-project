@@ -2,6 +2,10 @@
 {% block title %}MLB Results · {{ result_date_long }} · MLB Sims{% endblock %}
 {% block description %}Completed MLB game results from {{ result_date_long }} — final scores by matchup. Compare with our daily Poisson prediction model at mlbsims.com.{% endblock %}
 {% block canonical_path %}/results/{{ result_date }}/{% endblock %}
+{# Only the live "/results/" landing is indexable; the per-date archive copies
+   are noindex (thin, templated, duplicate-ish). render.py sets is_archived=True
+   on those. #}
+{% block robots %}{% if is_archived %}<meta name="robots" content="noindex,follow">{% else %}<meta name="robots" content="index,follow">{% endif %}{% endblock %}
 {% block content %}
 <h1>Results · {{ result_date_long }}</h1>
 <p class="subtitle">{{ games|length }} completed game{{ '' if games|length == 1 else 's' }}.</p>

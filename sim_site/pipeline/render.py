@@ -176,6 +176,7 @@ def render(today: dt.date | None = None) -> None:
             slate_date_long=long_date(date_str),
             games=games,
             show_footer_signup=False,  # hero already has the signup
+            is_archived=True,  # noindex these per-date copies; homepage stays indexable
             **common,
         )
         write(SITE_DIR / "games" / date_str / "index.html", slate_html)
@@ -212,6 +213,7 @@ def render(today: dt.date | None = None) -> None:
                 result_date_long=long_date(date_str),
                 games=games_for_date,
                 recent_dates=[d for d in recent_dates if d != date_str][:7],
+                is_archived=True,  # noindex these per-date copies; /results/ landing is the canonical
                 **common,
             )
             write(SITE_DIR / "results" / date_str / "index.html", html)
@@ -240,31 +242,24 @@ SITE_BASE = "https://mlbsims.com"
 
 
 def write_sitemap(site_dir: Path, sims: dict, completed: pd.DataFrame, today: dt.date) -> None:
-    """Generate sitemap.xml listing every public URL on the site, with lastmod.
+    """Generate sitemap.xml — evergreen URLs only.
 
-    Search engines (especially for new sites) rely on the sitemap to discover
-    pages — without it, Google may take weeks to find non-homepage URLs since
-    nothing links to them yet.
+    Why so few URLs: a sitemap is a *priority signal*, not a manifest. For a
+    young low-authority domain, dumping ~300 templated game/results URLs into
+    the sitemap dilutes crawl budget — Google sees lots of thin pages and
+    indexes none. The thin pages also carry noindex,follow at the template
+    level (see slate.html / game.html / results.html), so internal links still
+    pass link equity but the pages themselves don't compete for crawl budget.
+
+    Add blog posts here when we have them.
     """
     today_iso = today.isoformat()
     urls: list[tuple[str, str]] = [
         (f"{SITE_BASE}/", today_iso),
-        (f"{SITE_BASE}/methodology", today_iso),
         (f"{SITE_BASE}/ask", today_iso),
+        (f"{SITE_BASE}/methodology", today_iso),
         (f"{SITE_BASE}/results/", today_iso),
     ]
-
-    # Slate pages + per-game detail pages
-    for date_str, games in sorted(sims.items()):
-        urls.append((f"{SITE_BASE}/games/{date_str}/", date_str))
-        for g in games:
-            slug = f"{g['away']['abbr']}-at-{g['home']['abbr']}"
-            urls.append((f"{SITE_BASE}/games/{date_str}/{slug}", date_str))
-
-    # Per-date results pages
-    if not completed.empty:
-        for date_str in sorted(set(completed["date"].tolist()), reverse=True)[:30]:
-            urls.append((f"{SITE_BASE}/results/{date_str}/", date_str))
 
     lines = ['<?xml version="1.0" encoding="UTF-8"?>',
              '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
