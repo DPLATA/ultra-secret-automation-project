@@ -5,13 +5,15 @@
 #   team: team Brief Name from constants.MLB_TEAMS_INFO (e.g. Cubs, Yankees, Padres)
 #
 # Optional knobs (sensible defaults applied if omitted):
-#   lookback_days:        how many days back to scan for new games (default 7)
+#   lookback_days:        how many days back to scan for new games (default 3 —
+#                         keep aligned with the on-disk retention window so we
+#                         never re-scrape a date whose dedup rows have been pruned)
 #   long_min_clips:       minimum clip count to build the long horizontal video (default 5)
 #   short_min_clips:      minimum clips of one pitch type to build a vertical Short (default 3)
 #   strikes_only_shorts:  if true, vertical Shorts only include strikes (default true)
 
 defaults:
-  lookback_days: 7
+  lookback_days: 3
   long_min_clips: 5
   short_min_clips: 3
   short_max_clips: 6   # hard cap so the Short stays under YouTube's 60s rule
